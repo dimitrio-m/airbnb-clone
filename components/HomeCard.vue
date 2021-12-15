@@ -28,6 +28,7 @@
 import Vue from 'vue'
 
 export default Vue.extend({
+  name: 'HomeCard',
   props: {
     home: {
       type: Object,
