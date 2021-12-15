@@ -3,7 +3,9 @@
     <h1 class="text-3xl font-bold underline">
       Hello world!
     </h1>
-    <p>{{ homes[0] }}</p>
+    <div class="flex flex-row gap-8">
+      <home-card v-for="home in homes" :key="home.objectId" :home="home" />
+    </div>
   </div>
 </template>
 
