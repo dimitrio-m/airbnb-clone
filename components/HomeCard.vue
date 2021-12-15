@@ -26,12 +26,14 @@
 
 <script lang="ts">
 import Vue from 'vue'
+import type { PropType } from 'vue'
+import Home from '@/models/home'
 
 export default Vue.extend({
   name: 'HomeCard',
   props: {
     home: {
-      type: Object,
+      type: Object as PropType<Home>,
       required: true
     }
   }

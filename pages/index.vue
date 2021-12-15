@@ -12,9 +12,15 @@
 <script lang="ts">
 import Vue from 'vue'
 import homes from '@/data/homes.json'
+import Home from '@/models/home'
+
+interface HomeData {
+  homes: Home[]
+}
 
 export default Vue.extend({
-  data () {
+  name: 'Home',
+  data (): HomeData {
     return {
       homes
     }
