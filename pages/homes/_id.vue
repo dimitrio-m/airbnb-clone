@@ -9,19 +9,18 @@ import Vue from 'vue'
 import homes from '@/data/homes.json'
 import Home from '@/models/home'
 
-interface ShowHomeData {
-  home: Home | undefined
-}
-
 export default Vue.extend({
   name: 'ShowHome',
-  data () : ShowHomeData {
+  data () {
     return {
-      home: undefined
+      home: {} as Home
     }
   },
   created () : void {
-    this.home = homes.find((home: Home) => home.objectID === this.$route.params.id)
+    const home = homes.find((home: Home) => home.objectID === this.$route.params.id)
+    if (home) {
+      this.home = home
+    }
   }
 })
 </script>

@@ -11,18 +11,14 @@
 
 <script lang="ts">
 import Vue from 'vue'
-import homes from '@/data/homes.json'
+import homesData from '@/data/homes.json'
 import Home from '@/models/home'
-
-interface HomeData {
-  homes: Home[]
-}
 
 export default Vue.extend({
   name: 'Home',
-  data (): HomeData {
+  data () {
     return {
-      homes
+      homes: homesData as Home[]
     }
   },
   head () {

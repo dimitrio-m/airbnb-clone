@@ -1,4 +1,5 @@
 {
+  "extends": "./.nuxt/tsconfig.json",
   "compilerOptions": {
     "resolveJsonModule": true,
     "target": "ES2018",
@@ -26,7 +27,7 @@
     },
     "types": [
       "@nuxt/types",
-      "@types/node"
+      "@types/node",
     ]
   },
   "exclude": [
