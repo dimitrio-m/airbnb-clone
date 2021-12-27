@@ -1,6 +1,6 @@
 <template>
   <article class="max-w-xs rounded shadow-lg">
-    <a href="#">
+    <nuxt-link :to="`/homes/${home.objectID}`">
       <img :src="home.images[0]" width="360" height="175" alt="">
       <div class="p-4">
         <p>
@@ -16,11 +16,15 @@
           <span class="text-slate-400">/ night</span>
         </p>
         <div class="flex flex-row">
-          <p class="basis-1/2 text-left">House icon</p>
-          <p class="basis-1/2 text-right">2 guests</p>
+          <p class="basis-1/2 text-left">
+            House icon
+          </p>
+          <p class="basis-1/2 text-right">
+            2 guests
+          </p>
         </div>
       </div>
-    </a>
+    </nuxt-link>
   </article>
 </template>
 
