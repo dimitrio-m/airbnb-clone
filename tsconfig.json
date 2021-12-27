@@ -17,6 +17,9 @@
     "noEmit": true,
     "experimentalDecorators": true,
     "baseUrl": ".",
+    "typeRoots": [
+      "models/"
+    ],
     "paths": {
       "~/*": [
         "./*"
