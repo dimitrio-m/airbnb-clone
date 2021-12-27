@@ -1,6 +1,6 @@
 <template>
   <article class="max-w-xs rounded shadow-lg">
-    <nuxt-link :to="`/homes/${home.objectID}`">
+    <nuxt-link :to="`/homes/${home.objectID}`" prefetch>
       <img :src="home.images[0]" width="360" height="175" alt="">
       <div class="p-4">
         <p>
