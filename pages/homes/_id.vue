@@ -16,11 +16,19 @@
 <script lang="ts">
 import Vue from 'vue'
 import { MetaInfo } from 'vue-meta/types'
-import homes from '@/data/homes.json'
 import Home from '@/models/home'
 
 export default Vue.extend({
   name: 'ShowHome',
+  async asyncData (context) {
+    const response = await context.app.$dataApi.getHome(context.params.id)
+
+    if (!response.ok) {
+      return context.error({ statusCode: response.status, message: response.statusText })
+    }
+
+    return { home: response.json }
+  },
   data () {
     return {
       home: {} as Home
@@ -33,12 +41,6 @@ export default Vue.extend({
   },
   mounted () {
     this.$maps.showMap(this.$refs.map as Element, this.home._geoloc)
-  },
-  created () {
-    const home = homes.find((home: Home) => home.objectID === this.$route.params.id)
-    if (home) {
-      this.home = home
-    }
   }
 })
 </script>
