@@ -5,7 +5,7 @@ export default interface Review {
     image: string,
     name: string
   }
-  rating: string
+  rating: number
   date: string
   comment: string
 }
