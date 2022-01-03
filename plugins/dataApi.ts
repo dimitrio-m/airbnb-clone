@@ -1,14 +1,16 @@
 import { Plugin } from '@nuxt/types'
 import Home from '@/models/home'
+import Review from '@/models/review'
+import User from '@/models/user'
 import ApiResponse from '@/models/apiResponse'
-import Review from '~/models/review'
 
 declare module 'vue/types/vue' {
   // this.$myInjectedFunction inside Vue components
   interface Vue {
     $dataApi: {
       getHome(id: string): Promise<ApiResponse>
-      getReviewsByHomeId (homeId: string): Promise<ApiResponse>
+      getReviewsByHomeId(homeId: string): Promise<ApiResponse>
+      getUserByHomeId(homeId: string): Promise<ApiResponse>
     }
   }
 }
@@ -17,15 +19,17 @@ declare module '@nuxt/types' {
   // nuxtContext.app.$myInjectedFunction inside asyncData, fetch, plugins, middleware, nuxtServerInit
   interface NuxtAppOptions {
     $dataApi: {
-      getHome(id: string): Promise<ApiResponse>
-      getReviewsByHomeId (homeId: string): Promise<ApiResponse>
+      getHome (id: string): Promise<ApiResponse>
+      getReviewsByHomeId(homeId: string): Promise<ApiResponse>
+      getUserByHomeId(homeId: string): Promise<ApiResponse>
     }
   }
   // nuxtContext.$myInjectedFunction
   interface Context {
     $dataApi: {
-      getHome(id: string): Promise<ApiResponse>
-      getReviewsByHomeId (homeId: string): Promise<ApiResponse>
+      getHome (id: string): Promise<ApiResponse>
+      getReviewsByHomeId(homeId: string): Promise<ApiResponse>
+      getUserByHomeId(homeId: string): Promise<ApiResponse>
     }
   }
 }
@@ -35,8 +39,9 @@ declare module 'vuex/types/index' {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface Store<S> {
     $dataApi: {
-      getHome(id: string): Promise<ApiResponse>
+      getHome (id: string): Promise<ApiResponse>
       getReviewsByHomeId (homeId: string): Promise<ApiResponse>
+      getUserByHomeId(homeId: string): Promise<ApiResponse>
     }
   }
 }
@@ -51,7 +56,8 @@ const plugin: Plugin = (_context, inject) => {
 
   inject('dataApi', {
     getHome,
-    getReviewsByHomeId
+    getReviewsByHomeId,
+    getUserByHomeId
   })
 
   async function getHome (id: string): Promise<ApiResponse> {
@@ -82,6 +88,29 @@ const plugin: Plugin = (_context, inject) => {
         })
       })
       const data: Review[] = (await response.json()).hits
+      const { ok, status, statusText } = response
+      return {
+        data,
+        ok,
+        status,
+        statusText
+      }
+    } catch (error) {
+      return getErrorResponse(error as Error)
+    }
+  }
+
+  async function getUserByHomeId (homeId: string): Promise<ApiResponse> {
+    try {
+      const response = await fetch(`https://${appId}-dsn.algolia.net/1/indexes/users/query`, {
+        headers,
+        method: 'POST',
+        body: JSON.stringify({
+          filters: `homeId:${homeId}`,
+          attributesToHighlight: []
+        })
+      })
+      const data: User = (await response.json()).hits[0]
       const { ok, status, statusText } = response
       return {
         data,
