@@ -1,7 +1,8 @@
 import Home from './home'
+import Review from './review'
 
 export default interface ApiResponse {
-  json: Object | Home | Home[]
+  data: null | Home | Home[] | Review[]
   ok: boolean
   status: number
   statusText: string

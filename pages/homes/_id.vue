@@ -10,6 +10,13 @@
     {{ home.guests }} guests, {{ home.bedrooms }} rooms, {{ home.beds }} beds, {{ home.bathrooms }} bath<br>
     {{ home.description }}
     <div ref="map" style="height:800px;width:800px" />
+    <div v-for="review in reviews" :key="review.objectID">
+      <img :src="review.reviewer.image">
+      <br>
+      {{ review.reviewer.name }}<br>
+      {{ formatDate(review.date) }} <br>
+      <short-text :text="review.comment" :target="150" /> <br>
+    </div>
   </div>
 </template>
 
@@ -17,21 +24,32 @@
 import Vue from 'vue'
 import { MetaInfo } from 'vue-meta/types'
 import Home from '@/models/home'
+import Review from '@/models/review'
 
 export default Vue.extend({
   name: 'ShowHome',
   async asyncData (context) {
-    const response = await context.app.$dataApi.getHome(context.params.id)
-
-    if (!response.ok) {
-      return context.error({ statusCode: response.status, message: response.statusText })
+    // Get home data
+    const homeResponse = await context.app.$dataApi.getHome(context.params.id)
+    if (!homeResponse.ok) {
+      return context.error({ statusCode: homeResponse.status, message: homeResponse.statusText })
     }
 
-    return { home: response.json }
+    // Get reviews
+    const reviewsResponse = await context.app.$dataApi.getReviewsByHomeId(context.params.id)
+    if (!reviewsResponse.ok) {
+      return context.error({ statusCode: reviewsResponse.status, message: reviewsResponse.statusText })
+    }
+
+    return {
+      home: homeResponse.data as Home,
+      reviews: reviewsResponse.data as Review[]
+    }
   },
   data () {
     return {
-      home: {} as Home
+      home: {} as Home,
+      reviews: [] as Review[]
     }
   },
   head (): MetaInfo {
@@ -41,6 +59,12 @@ export default Vue.extend({
   },
   mounted () {
     this.$maps.showMap(this.$refs.map as Element, this.home._geoloc)
+  },
+  methods: {
+    formatDate (dateStr: string) {
+      const date = new Date(dateStr)
+      return date.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })
+    }
   }
 })
 </script>

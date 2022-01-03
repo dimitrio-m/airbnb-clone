@@ -1,12 +1,14 @@
 import { Plugin } from '@nuxt/types'
 import Home from '@/models/home'
 import ApiResponse from '@/models/apiResponse'
+import Review from '~/models/review'
 
 declare module 'vue/types/vue' {
   // this.$myInjectedFunction inside Vue components
   interface Vue {
     $dataApi: {
       getHome(id: string): Promise<ApiResponse>
+      getReviewsByHomeId (homeId: string): Promise<ApiResponse>
     }
   }
 }
@@ -16,12 +18,14 @@ declare module '@nuxt/types' {
   interface NuxtAppOptions {
     $dataApi: {
       getHome(id: string): Promise<ApiResponse>
+      getReviewsByHomeId (homeId: string): Promise<ApiResponse>
     }
   }
   // nuxtContext.$myInjectedFunction
   interface Context {
     $dataApi: {
       getHome(id: string): Promise<ApiResponse>
+      getReviewsByHomeId (homeId: string): Promise<ApiResponse>
     }
   }
 }
@@ -32,6 +36,7 @@ declare module 'vuex/types/index' {
   interface Store<S> {
     $dataApi: {
       getHome(id: string): Promise<ApiResponse>
+      getReviewsByHomeId (homeId: string): Promise<ApiResponse>
     }
   }
 }
@@ -45,26 +50,47 @@ const plugin: Plugin = (_context, inject) => {
   }
 
   inject('dataApi', {
-    getHome
+    getHome,
+    getReviewsByHomeId
   })
 
   async function getHome (id: string): Promise<ApiResponse> {
     try {
       const response = await fetch(`https://${appId}-dsn.algolia.net/1/indexes/homes/${id}`, { headers })
-      return unWrap(response)
+      const data: Home = await response.json()
+      const { ok, status, statusText } = response
+      return {
+        data,
+        ok,
+        status,
+        statusText
+      }
     } catch (error) {
       return getErrorResponse(error as Error)
     }
   }
 
-  async function unWrap (response: Response) {
-    const json: Home = await response.json()
-    const { ok, status, statusText } = response
-    return {
-      json,
-      ok,
-      status,
-      statusText
+  async function getReviewsByHomeId (homeId: string): Promise<ApiResponse> {
+    try {
+      const response = await fetch(`https://${appId}-dsn.algolia.net/1/indexes/reviews/query`, {
+        headers,
+        method: 'POST',
+        body: JSON.stringify({
+          filters: `homeId:${homeId}`,
+          hitsPerPage: 6,
+          attributesToHighlight: []
+        })
+      })
+      const data: Review[] = (await response.json()).hits
+      const { ok, status, statusText } = response
+      return {
+        data,
+        ok,
+        status,
+        statusText
+      }
+    } catch (error) {
+      return getErrorResponse(error as Error)
     }
   }
 
@@ -73,7 +99,7 @@ const plugin: Plugin = (_context, inject) => {
       ok: false,
       status: 500,
       statusText: error.message,
-      json: {}
+      data: null
     }
   }
 }
