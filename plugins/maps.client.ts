@@ -37,14 +37,19 @@ declare module 'vuex/types/index' {
 
 declare global {
   interface Window {
-    initMap(): void
+    initGoogleMaps(): void
     google: any
   }
 }
 
+interface WaitingCall {
+  fn: Function
+  arguments: any
+}
+
 const plugin: Plugin = (_context, inject) => {
-  let mapLoaded: boolean = false
-  let mapWaiting: { canvas: Element, location: Geoloc } | null = null
+  let isLoaded: boolean = false
+  let waiting: WaitingCall[] = []
 
   addScript()
 
@@ -54,30 +59,30 @@ const plugin: Plugin = (_context, inject) => {
 
   function addScript () {
     const script = document.createElement('script')
-    script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyD5S1mQ6m3u8i2L9u0J3LZ6YvI3QUSydL8&libraries=places&callback=initMap'
+    script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyD5S1mQ6m3u8i2L9u0J3LZ6YvI3QUSydL8&libraries=places&callback=initGoogleMaps'
     script.async = true
-    window.initMap = initMap
+    window.initGoogleMaps = initGoogleMaps
     document.head.appendChild(script)
   }
 
-  function initMap () {
-    mapLoaded = true
-    if (mapWaiting) {
-      const { canvas, location } = mapWaiting
-      renderMap(canvas, location)
-      mapWaiting = null
-    }
+  function initGoogleMaps () {
+    isLoaded = true
+    waiting.forEach((item) => {
+      if (typeof item.fn === 'function') {
+        item.fn(...item.arguments)
+      }
+    })
+    waiting = []
   }
 
   function showMap (canvas: Element, location: Geoloc) {
-    if (mapLoaded) {
-      renderMap(canvas, location)
-    } else {
-      mapWaiting = { canvas, location }
+    if (!isLoaded) {
+      waiting.push({
+        fn: showMap,
+        arguments
+      })
+      return
     }
-  }
-
-  function renderMap (canvas: Element, location: Geoloc) {
     const mapOptions = {
       zoom: 18,
       center: new window.google.maps.LatLng(location.lat, location.lng),
