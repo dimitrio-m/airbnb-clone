@@ -9,6 +9,7 @@ declare module 'vue/types/vue' {
   interface Vue {
     $dataApi: {
       getHome(id: string): Promise<ApiResponse>
+      getHomesByLocation (lat: number | string, lng: number | string, radiusInMeters?: number): Promise<ApiResponse>
       getReviewsByHomeId(homeId: string): Promise<ApiResponse>
       getUserByHomeId(homeId: string): Promise<ApiResponse>
     }
@@ -19,7 +20,8 @@ declare module '@nuxt/types' {
   // nuxtContext.app.$myInjectedFunction inside asyncData, fetch, plugins, middleware, nuxtServerInit
   interface NuxtAppOptions {
     $dataApi: {
-      getHome (id: string): Promise<ApiResponse>
+      getHome(id: string): Promise<ApiResponse>
+      getHomesByLocation (lat: number | string, lng: number | string, radiusInMeters?: number): Promise<ApiResponse>
       getReviewsByHomeId(homeId: string): Promise<ApiResponse>
       getUserByHomeId(homeId: string): Promise<ApiResponse>
     }
@@ -27,7 +29,8 @@ declare module '@nuxt/types' {
   // nuxtContext.$myInjectedFunction
   interface Context {
     $dataApi: {
-      getHome (id: string): Promise<ApiResponse>
+      getHome(id: string): Promise<ApiResponse>
+      getHomesByLocation (lat: number | string, lng: number | string, radiusInMeters?: number): Promise<ApiResponse>
       getReviewsByHomeId(homeId: string): Promise<ApiResponse>
       getUserByHomeId(homeId: string): Promise<ApiResponse>
     }
@@ -39,7 +42,8 @@ declare module 'vuex/types/index' {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface Store<S> {
     $dataApi: {
-      getHome (id: string): Promise<ApiResponse>
+      getHome(id: string): Promise<ApiResponse>
+      getHomesByLocation (lat: number | string, lng: number | string, radiusInMeters?: number): Promise<ApiResponse>
       getReviewsByHomeId (homeId: string): Promise<ApiResponse>
       getUserByHomeId(homeId: string): Promise<ApiResponse>
     }
@@ -57,13 +61,39 @@ const plugin: Plugin = (_context, inject) => {
   inject('dataApi', {
     getHome,
     getReviewsByHomeId,
-    getUserByHomeId
+    getUserByHomeId,
+    getHomesByLocation
   })
 
   async function getHome (id: string): Promise<ApiResponse> {
     try {
       const response = await fetch(`https://${appId}-dsn.algolia.net/1/indexes/homes/${id}`, { headers })
       const data: Home = await response.json()
+      const { ok, status, statusText } = response
+      return {
+        data,
+        ok,
+        status,
+        statusText
+      }
+    } catch (error) {
+      return getErrorResponse(error as Error)
+    }
+  }
+
+  async function getHomesByLocation (lat: number | string, lng: number | string, radiusInMeters: number = 1500): Promise<ApiResponse> {
+    try {
+      const response = await fetch(`https://${appId}-dsn.algolia.net/1/indexes/homes/query`, {
+        headers,
+        method: 'POST',
+        body: JSON.stringify({
+          aroundLatLng: `${lat},${lng}`,
+          aroundRadius: radiusInMeters,
+          hitsPerPage: 10,
+          attributesToHighlight: []
+        })
+      })
+      const data: Home[] = (await response.json()).hits
       const { ok, status, statusText } = response
       return {
         data,
