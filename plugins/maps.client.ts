@@ -6,6 +6,7 @@ declare module 'vue/types/vue' {
   interface Vue {
     $maps: {
       showMap(canvas: Element, location: Geoloc): void
+      makeAutoComplete (input: Element): void
     }
   }
 }
@@ -15,12 +16,14 @@ declare module '@nuxt/types' {
   interface NuxtAppOptions {
     $maps: {
       showMap(canvas: Element, location: Geoloc): void
+      makeAutoComplete (input: Element): void
     }
   }
   // nuxtContext.$myInjectedFunction
   interface Context {
     $maps: {
       showMap(canvas: Element, location: Geoloc): void
+      makeAutoComplete (input: Element): void
     }
   }
 }
@@ -31,6 +34,7 @@ declare module 'vuex/types/index' {
   interface Store<S> {
     $maps: {
       showMap(canvas: Element, location: Geoloc): void
+      makeAutoComplete (input: Element): void
     }
   }
 }
@@ -54,7 +58,8 @@ const plugin: Plugin = (_context, inject) => {
   addScript()
 
   inject('maps', {
-    showMap
+    showMap,
+    makeAutoComplete
   })
 
   function addScript () {
@@ -73,6 +78,19 @@ const plugin: Plugin = (_context, inject) => {
       }
     })
     waiting = []
+  }
+
+  function makeAutoComplete (input: Element) {
+    if (!isLoaded) {
+      waiting.push({ fn: makeAutoComplete, arguments })
+      return
+    }
+
+    const autoComplete = new window.google.maps.places.Autocomplete(input, { types: ['(cities)'] })
+    autoComplete.addListener('place_changed', () => {
+      const place = autoComplete.getPlace()
+      input.dispatchEvent(new CustomEvent('changed', { detail: place }))
+    })
   }
 
   function showMap (canvas: Element, location: Geoloc) {
