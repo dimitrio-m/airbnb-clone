@@ -1,4 +1,4 @@
-import { Plugin } from '@nuxt/types'
+import { defineNuxtPlugin } from '#app'
 import Geoloc from '@/models/geoloc'
 import Marker from '@/models/marker'
 
@@ -52,13 +52,13 @@ interface WaitingCall {
   arguments: any
 }
 
-const plugin: Plugin = (_context, inject) => {
+export default defineNuxtPlugin((nuxtApp) => {
   let isLoaded: boolean = false
   let waiting: WaitingCall[] = []
 
   addScript()
 
-  inject('maps', {
+  nuxtApp.provide('maps', {
     showMap,
     makeAutoComplete
   })
@@ -139,6 +139,4 @@ const plugin: Plugin = (_context, inject) => {
       map.fitBounds(bounds)
     }
   }
-}
-
-export default plugin
+})

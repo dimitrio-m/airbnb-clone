@@ -1,4 +1,4 @@
-import { Plugin } from '@nuxt/types'
+import { defineNuxtPlugin } from '#app'
 import Home from '@/models/home'
 import Review from '@/models/review'
 import User from '@/models/user'
@@ -50,7 +50,7 @@ declare module 'vuex/types/index' {
   }
 }
 
-const plugin: Plugin = (_context, inject) => {
+export default defineNuxtPlugin((nuxtApp) => {
   const appId = '2EIY7J5271'
   const apiKey = '523781a66ff83e1e0ea79c7daf1c310c'
   const headers = {
@@ -58,7 +58,7 @@ const plugin: Plugin = (_context, inject) => {
     'X-Algolia-Application-Id': appId
   }
 
-  inject('dataApi', {
+  nuxtApp.provide('dataApi', {
     getHome,
     getReviewsByHomeId,
     getUserByHomeId,
@@ -161,6 +161,4 @@ const plugin: Plugin = (_context, inject) => {
       data: null
     }
   }
-}
-
-export default plugin
+})
