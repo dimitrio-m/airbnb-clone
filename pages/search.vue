@@ -1,14 +1,18 @@
 <template>
   <div>
     {{ lat }} / {{ lng }} / {{ label }}<br>
-    <div v-for="home in homes" :key="home.ObjectID">
-      {{ home.title }}<br>
+    <div v-if="homes.length > 0">
+      <HomeRow v-for="home in homes" :key="home.objectID" :home="home" />
+    </div>
+    <div v-else>
+      No results found
     </div>
   </div>
 </template>
 
 <script lang="ts">
 import Vue from 'vue'
+import { MetaInfo } from 'vue-meta/types'
 import Home from '@/models/home'
 
 export default Vue.extend({
@@ -45,6 +49,11 @@ export default Vue.extend({
       label: '',
       lat: '',
       lng: ''
+    }
+  },
+  head (): MetaInfo {
+    return {
+      title: `Homes around ${this.label}`
     }
   }
 })
