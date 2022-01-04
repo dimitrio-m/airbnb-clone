@@ -1,11 +1,12 @@
 import { Plugin } from '@nuxt/types'
 import Geoloc from '@/models/geoloc'
+import Marker from '@/models/marker'
 
 declare module 'vue/types/vue' {
   // this.$myInjectedFunction inside Vue components
   interface Vue {
     $maps: {
-      showMap(canvas: Element, location: Geoloc): void
+      showMap(canvas: Element, location: Geoloc, markers?: Marker[]): void
       makeAutoComplete (input: Element): void
     }
   }
@@ -15,14 +16,14 @@ declare module '@nuxt/types' {
   // nuxtContext.app.$myInjectedFunction inside asyncData, fetch, plugins, middleware, nuxtServerInit
   interface NuxtAppOptions {
     $maps: {
-      showMap(canvas: Element, location: Geoloc): void
+      showMap(canvas: Element, location: Geoloc, markers?: Marker[]): void
       makeAutoComplete (input: Element): void
     }
   }
   // nuxtContext.$myInjectedFunction
   interface Context {
     $maps: {
-      showMap(canvas: Element, location: Geoloc): void
+      showMap(canvas: Element, location: Geoloc, markers?: Marker[]): void
       makeAutoComplete (input: Element): void
     }
   }
@@ -33,7 +34,7 @@ declare module 'vuex/types/index' {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface Store<S> {
     $maps: {
-      showMap(canvas: Element, location: Geoloc): void
+      showMap(canvas: Element, location: Geoloc, markers?: Marker[]): void
       makeAutoComplete (input: Element): void
     }
   }
@@ -93,7 +94,7 @@ const plugin: Plugin = (_context, inject) => {
     })
   }
 
-  function showMap (canvas: Element, location: Geoloc) {
+  function showMap (canvas: Element, location: Geoloc, markers?: Marker[]) {
     if (!isLoaded) {
       waiting.push({
         fn: showMap,
@@ -101,16 +102,42 @@ const plugin: Plugin = (_context, inject) => {
       })
       return
     }
+
     const mapOptions = {
       zoom: 18,
       center: new window.google.maps.LatLng(location.lat, location.lng),
       disableDefaultUI: true,
-      zoomControl: true
+      zoomControl: true,
+      styles: [{
+        featureType: 'poi.business',
+        elementType: 'labels.icon',
+        stylers: [{ visibility: 'off' }]
+      }]
     }
+
     const map = new window.google.maps.Map(canvas, mapOptions)
-    const position = new window.google.maps.LatLng(location.lat, location.lng)
-    const marker = new window.google.maps.Marker({ position })
-    marker.setMap(map)
+    if (!markers || markers.length === 0) {
+      const position = new window.google.maps.LatLng(location.lat, location.lng)
+      const marker = new window.google.maps.Marker({ position, clickable: false })
+      marker.setMap(map)
+    } else {
+      const bounds = new window.google.maps.LatLngBounds()
+      markers.forEach((homeMarker) => {
+        const position = new window.google.maps.LatLng(homeMarker.position.lat, homeMarker.position.lng)
+        const marker = new window.google.maps.Marker({
+          position,
+          clickable: false,
+          label: {
+            text: `$${homeMarker.price}`,
+            className: `marker home-${homeMarker.id}`
+          },
+          icon: 'https://maps.gstatic.com/mapfiles/transparent.png'
+        })
+        marker.setMap(map)
+        bounds.extend(position)
+      })
+      map.fitBounds(bounds)
+    }
   }
 }
 

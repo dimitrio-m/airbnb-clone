@@ -3,7 +3,9 @@
     Results for {{ label }}<br>
     <div ref="map" style="height:800px;width:800px;float:right;" />
     <div v-if="homes.length > 0">
-      <HomeRow v-for="home in homes" :key="home.objectID" :home="home" />
+      <nuxt-link v-for="home in homes" :key="home.objectID" :to="`/homes/${home.objectID}`">
+        <HomeRow :home="home" @mouseover.native="highlightMarker(home.objectID, true)" @mouseout.native="highlightMarker(home.objectID, false)" />
+      </nuxt-link>
     </div>
     <div v-else>
       No results found
@@ -15,6 +17,7 @@
 import Vue from 'vue'
 import { MetaInfo } from 'vue-meta/types'
 import Home from '@/models/home'
+import Marker from '@/models/marker'
 
 export default Vue.extend({
   name: 'SearchHome',
@@ -62,9 +65,36 @@ export default Vue.extend({
     this.updateMap()
   },
   methods: {
+    highlightMarker (homeId: string, isHighlighted: boolean) {
+      document.getElementsByClassName(`home-${homeId}`)[0]?.classList?.toggle('marker-highlight', isHighlighted)
+    },
     updateMap () {
-      this.$maps.showMap(this.$refs.map as Element, { lat: this.lat, lng: this.lng })
+      this.$maps.showMap(this.$refs.map as Element, { lat: this.lat, lng: this.lng }, this.getHomeMarkers())
+    },
+    getHomeMarkers (): Marker[] {
+      return this.homes.map((home) => {
+        return {
+          position: home._geoloc,
+          price: home.pricePerNight,
+          id: home.objectID
+        }
+      })
     }
   }
 })
 </script>
+
+<style>
+.marker {
+  background-color: white;
+  border: 1px solid lightgray;
+  font-weight: bold;
+  border-radius: 20px;
+  padding: 5px 8px;
+}
+.marker-highlight {
+  color: white !important;
+  background-color: black;
+  border-color:black;
+}
+</style>
