@@ -1,6 +1,7 @@
 <template>
   <div>
-    {{ lat }} / {{ lng }} / {{ label }}<br>
+    Results for {{ label }}<br>
+    <div ref="map" style="height:800px;width:800px;float:right;" />
     <div v-if="homes.length > 0">
       <HomeRow v-for="home in homes" :key="home.objectID" :home="home" />
     </div>
@@ -27,6 +28,7 @@ export default Vue.extend({
     this.label = label
     this.lat = lat
     this.lng = lng
+    this.updateMap()
 
     next()
   },
@@ -54,6 +56,14 @@ export default Vue.extend({
   head (): MetaInfo {
     return {
       title: `Homes around ${this.label}`
+    }
+  },
+  mounted () {
+    this.updateMap()
+  },
+  methods: {
+    updateMap () {
+      this.$maps.showMap(this.$refs.map as Element, { lat: this.lat, lng: this.lng })
     }
   }
 })

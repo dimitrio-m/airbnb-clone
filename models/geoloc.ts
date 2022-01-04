@@ -1,4 +1,4 @@
 export default interface Geoloc {
-  'lat': number
-  'lng': number
+  lat: number | string
+  lng: number | string
 }
